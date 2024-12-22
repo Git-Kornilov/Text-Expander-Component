@@ -1,75 +1,68 @@
-import { useState } from "react";
-import "./styles.css";
+// `https://api.frankfurter.app/latest?amount=100&from=EUR&to=USD`
+
+import { useEffect, useState } from "react";
 
 export default function App() {
+  const [amount, setAmount] = useState(1);
+  const [fromCur, setFromCur] = useState("EUR");
+  const [toCur, setToCur] = useState("USD");
+  const [converted, setConverted] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(
+    function () {
+      async function convert() {
+        setIsLoading(true);
+
+        const res = await fetch(
+          `https://api.frankfurter.app/latest?amount=${amount}&from=${fromCur}&to=${toCur}`
+        );
+
+        const data = await res.json();
+
+        setConverted(data.rates[toCur]);
+
+        setIsLoading(false);
+      }
+
+      if (fromCur === toCur) return setConverted(amount);
+
+      convert();
+    },
+    [amount, fromCur, toCur]
+  );
+
   return (
     <div>
-      <TextExpander>
-        Space travel is the ultimate adventure! Imagine soaring past the stars
-        and exploring new worlds. It's the stuff of dreams and science fiction,
-        but believe it or not, space travel is a real thing. Humans and robots
-        are constantly venturing out into the cosmos to uncover its secrets and
-        push the boundaries of what's possible.
-      </TextExpander>
-
-      <TextExpander
-        collapsedNumWords={20}
-        expandButtonText="Show text"
-        collapseButtonText="Collapse text"
-        buttonColor="#ff6622"
+      <input
+        type="text"
+        value={amount}
+        onChange={(e) => setAmount(Number(e.target.value))}
+        disabled={isLoading}
+      />
+      <select
+        value={fromCur}
+        onChange={(e) => setFromCur(e.target.value)}
+        disabled={isLoading}
       >
-        Space travel requires some seriously amazing technology and
-        collaboration between countries, private companies, and international
-        space organizations. And while it's not always easy (or cheap), the
-        results are out of this world. Think about the first time humans stepped
-        foot on the moon or when rovers were sent to roam around on Mars.
-      </TextExpander>
-
-      <TextExpander expanded={true}>
-        Space missions have given us incredible insights into our universe and
-        have inspired future generations to keep reaching for the stars. Space
-        travel is a pretty cool thing to think about. Who knows what we'll
-        discover next!
-      </TextExpander>
-    </div>
-  );
-}
-
-function TextExpander({
-  collapsedNumWords = 10,
-  expandButtonText = "Show more",
-  collapseButtonText = "Show less",
-  buttonColor = "#1f09cd",
-  expanded = false,
-  className = "box",
-  children,
-}) {
-  const [isExpended, setIsExpended] = useState(expanded);
-
-  const cutChildrenMessage =
-    children.split(" ").slice(0, collapsedNumWords).join(" ") + "...";
-
-  const displayText = isExpended ? children : cutChildrenMessage;
-
-  const buttonStyle = {
-    background: "none",
-    borderRadius: "3px",
-    font: "inherit",
-    cursor: "pointer",
-    marginLeft: "5px",
-    padding: "3px",
-    color: buttonColor,
-  };
-
-  return (
-    <div className={className}>
-      <span>{displayText}</span>
-      <button
-        onClick={() => setIsExpended((expended) => !expended)}
-        style={buttonStyle}
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="CAD">CAD</option>
+        <option value="INR">INR</option>
+      </select>
+      <select
+        value={toCur}
+        onChange={(e) => setToCur(e.target.value)}
+        disabled={isLoading}
       >
-        {isExpended ? collapseButtonText : expandButtonText}
-      </button>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="CAD">CAD</option>
+        <option value="INR">INR</option>
+      </select>
+      <p>
+        OUTPUT: {converted} {toCur}
+      </p>
     </div>
   );
 }
